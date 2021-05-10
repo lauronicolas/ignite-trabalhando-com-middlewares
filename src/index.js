@@ -9,20 +9,95 @@ app.use(cors());
 
 const users = [];
 
+//feito
 function checksExistsUserAccount(request, response, next) {
-  // Complete aqui
+  // recebe o username passado peloheader da request
+  const { username } = request.headers;
+
+  //verifica se possui algum user com o username informado
+  const user = users.find(user => user.username === username);
+
+  //Caso não exista ele retorna um erro
+  if (!user) {
+    return response.status(404).json({
+      error: "User does not exist"
+    });
+  }
+
+  //repassamos pelo request o usuario desejado
+  request.user = user;
+
+  return next();
 }
 
+//feito
 function checksCreateTodosUserAvailability(request, response, next) {
-  // Complete aqui
+  //recebemos o usuario atraves do request que recebemos do 'checkExistsUserAccount'
+  const { user } = request;
+
+  if (user.todos.length < 10 && user.pro === false || user.pro === true) {
+    return next();
+  }
+
+  return response.status(403).json({
+    error: "todos limit reached"
+  })
+
+
 }
 
 function checksTodoExists(request, response, next) {
-  // Complete aqui
+  const { username } = request.headers;
+
+  const id = request.params.id;
+
+  //verifica se possui algum user com o username informado
+  const user = users.find(user => user.username === username);
+
+  if (user) {
+
+    //validando o id recebido com um uuid v4
+    const isValidateId = validate(id);
+
+    if (isValidateId) {
+      const todo = user.todos.find(todo => todo.id === id);
+      if (todo) {
+        request.user = user;
+        request.todo = todo;
+        return next();
+      }
+      return response.status(404).json({
+        error: "todo does not exist"
+      });
+    }
+    return response.status(400).json({
+      error: "Id not is UUID"
+    });
+  }
+  return response.status(404).json({
+    done: true,
+    error: "User does not exist"
+  });
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  const id = request.params.id;
+
+  const isValidateId = validate(id);
+
+  if (isValidateId) {
+    const user = users.find(user => user.id === id);
+    if (user) {
+      request.user = user;
+      return next();
+    }
+    return response.status(404).json({
+      error: "User does not exist"
+    })
+  }
+  return response.status(404).json({
+    error: "Id not is UUID"
+  });
 }
 
 app.post('/users', (request, response) => {
