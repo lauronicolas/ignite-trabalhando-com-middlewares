@@ -11,6 +11,8 @@ const users = [];
 
 //feito
 function checksExistsUserAccount(request, response, next) {
+
+
   // recebe o username passado peloheader da request
   const { username } = request.headers;
 
